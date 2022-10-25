@@ -30,7 +30,8 @@
 				      XFEATURE_MASK_ZMM_Hi256 | \
 				      XFEATURE_MASK_Hi16_ZMM	 | \
 				      XFEATURE_MASK_PKRU | \
-				      XFEATURE_MASK_XTILE)
+				      XFEATURE_MASK_XTILE | \
+				      XFEATURE_MASK_APX)
 
 /*
  * Features which are restored when returning to user space.
