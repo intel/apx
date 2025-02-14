@@ -30,8 +30,6 @@
 				      XFEATURE_MASK_ZMM_Hi256 | \
 				      XFEATURE_MASK_Hi16_ZMM	 | \
 				      XFEATURE_MASK_PKRU | \
-				      XFEATURE_MASK_BNDREGS | \
-				      XFEATURE_MASK_BNDCSR | \
 				      XFEATURE_MASK_XTILE)
 
 /*

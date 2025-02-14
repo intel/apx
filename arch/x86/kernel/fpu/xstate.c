@@ -69,8 +69,6 @@ static unsigned short xsave_cpuid_features[] __initdata = {
 	[XFEATURE_FP]				= X86_FEATURE_FPU,
 	[XFEATURE_SSE]				= X86_FEATURE_XMM,
 	[XFEATURE_YMM]				= X86_FEATURE_AVX,
-	[XFEATURE_BNDREGS]			= X86_FEATURE_MPX,
-	[XFEATURE_BNDCSR]			= X86_FEATURE_MPX,
 	[XFEATURE_OPMASK]			= X86_FEATURE_AVX512F,
 	[XFEATURE_ZMM_Hi256]			= X86_FEATURE_AVX512F,
 	[XFEATURE_Hi16_ZMM]			= X86_FEATURE_AVX512F,
@@ -101,8 +99,6 @@ static const enum xfeature xfeature_noncompact_order[] = {
 	XFEATURE_FP,
 	XFEATURE_SSE,
 	XFEATURE_YMM,
-	XFEATURE_BNDREGS,
-	XFEATURE_BNDCSR,
 	XFEATURE_OPMASK,
 	XFEATURE_ZMM_Hi256,
 	XFEATURE_Hi16_ZMM,
@@ -360,8 +356,6 @@ static __init void os_xrstor_booting(struct xregs_state *xstate)
 	 XFEATURE_MASK_ZMM_Hi256 |		\
 	 XFEATURE_MASK_Hi16_ZMM	 |		\
 	 XFEATURE_MASK_PKRU |			\
-	 XFEATURE_MASK_BNDREGS |		\
-	 XFEATURE_MASK_BNDCSR |			\
 	 XFEATURE_MASK_PASID |			\
 	 XFEATURE_MASK_CET_USER |		\
 	 XFEATURE_MASK_XTILE)
@@ -555,8 +549,6 @@ static bool __init check_xstate_against_struct(int nr)
 	 */
 	switch (nr) {
 	case XFEATURE_YMM:	  return XCHECK_SZ(sz, nr, struct ymmh_struct);
-	case XFEATURE_BNDREGS:	  return XCHECK_SZ(sz, nr, struct mpx_bndreg_state);
-	case XFEATURE_BNDCSR:	  return XCHECK_SZ(sz, nr, struct mpx_bndcsr_state);
 	case XFEATURE_OPMASK:	  return XCHECK_SZ(sz, nr, struct avx_512_opmask_state);
 	case XFEATURE_ZMM_Hi256:  return XCHECK_SZ(sz, nr, struct avx_512_zmm_uppers_state);
 	case XFEATURE_Hi16_ZMM:	  return XCHECK_SZ(sz, nr, struct avx_512_hi16_state);
