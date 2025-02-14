@@ -92,6 +92,43 @@ static unsigned int xstate_flags[XFEATURE_MAX] __ro_after_init;
 #define XSTATE_FLAG_ALIGNED64	BIT(1)
 
 /*
+ * Ordering of xstate components in non-compacted format:  The xfeature
+ * number does not necessarily indicate its position in the XSAVE buffer.
+ * This array defines the traversal order of xstate features, included in
+ * XFEATURE_MASK_USER_SUPPORTED.
+ */
+static const enum xfeature xfeature_noncompact_order[] = {
+	XFEATURE_FP,
+	XFEATURE_SSE,
+	XFEATURE_YMM,
+	XFEATURE_BNDREGS,
+	XFEATURE_BNDCSR,
+	XFEATURE_OPMASK,
+	XFEATURE_ZMM_Hi256,
+	XFEATURE_Hi16_ZMM,
+	XFEATURE_PKRU,
+	XFEATURE_XTILE_CFG,
+	XFEATURE_XTILE_DATA,
+};
+
+static inline unsigned int next_xfeature_order(unsigned int i, u64 mask)
+{
+	for (; i < ARRAY_SIZE(xfeature_noncompact_order); i++) {
+		if (mask & BIT_ULL(xfeature_noncompact_order[i]))
+			break;
+	}
+
+	return i;
+}
+
+/* Iterate xstate features in non-compacted order */
+#define for_each_extended_xfeature_in_order(i, mask)		\
+	for (i = XFEATURE_YMM;					\
+	     i = next_xfeature_order(i, mask),			\
+	     i < ARRAY_SIZE(xfeature_noncompact_order);	\
+	     i++)
+
+/*
  * Return whether the system supports a given xfeature.
  *
  * Also return the name of the (most advanced) feature that the caller requested:
