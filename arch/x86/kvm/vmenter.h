@@ -7,6 +7,7 @@
 #define KVM_ENTER_VMRESUME			BIT(0)
 #define KVM_ENTER_SAVE_SPEC_CTRL		BIT(1)
 #define KVM_ENTER_CLEAR_CPU_BUFFERS_FOR_MMIO	BIT(2)
+#define KVM_ENTER_EGPR_SWITCH			BIT(3)
 
 #ifdef __ASSEMBLER__
 .macro RESTORE_GUEST_SPEC_CTRL_BODY guest_spec_ctrl:req, label:req
@@ -111,6 +112,18 @@
  .irp i, \regs
 	mov %r\i, (SEV_ES_GPRS_BASE + \i * WORD_SIZE)(\dst)
  .endr
+.endm
+#endif
+
+#ifdef CONFIG_KVM_APX
+.macro CLEAR_EGPRS
+	CLEAR_REGS 16d,17d,18d,19d,20d,21d,22d,23d,24d,25d,26d,27d,28d,29d,30d,31d
+.endm
+.macro VMX_LOAD_EGPRS src:req
+	VMX_LOAD_REGS \src, 16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31
+.endm
+.macro VMX_STORE_EGPRS dst:req
+	VMX_STORE_REGS \dst, 16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31
 .endm
 #endif
 

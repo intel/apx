@@ -57,6 +57,7 @@
  * @flags:	KVM_ENTER_RUN_VMRESUME:	use VMRESUME instead of VMLAUNCH
  *		KVM_ENTER_RUN_SAVE_SPEC_CTRL: save guest SPEC_CTRL into vmx->spec_ctrl
  *		KVM_ENTER_RUN_CLEAR_CPU_BUFFERS_FOR_MMIO: vCPU can access host MMIO
+ *		KVM_ENTER_RUN_EGPRS_SWITCH:	load/store guest EGPRs
  *
  * Returns:
  *	0 on VM-Exit, 1 on VM-Fail
@@ -86,6 +87,14 @@ SYM_FUNC_START(__vmx_vcpu_run)
 
 	/* Reload @vmx, _ASM_ARG1 may be modified by vmx_update_host_rsp().  */
 	mov WORD_SIZE(%_ASM_SP), %_ASM_DI
+
+#ifdef CONFIG_KVM_APX
+	ALTERNATIVE "jmp .Lload_egprs_done", "", X86_FEATURE_APX
+	testl	$KVM_ENTER_EGPR_SWITCH, (%_ASM_SP)
+	jz	.Lload_egprs_done
+	VMX_LOAD_EGPRS %_ASM_DI
+.Lload_egprs_done:
+#endif
 
 	/*
 	 * Unlike AMD there's no V_SPEC_CTRL here, so do not leave the body
@@ -229,8 +238,21 @@ SYM_INNER_LABEL_ALIGN(vmx_vmexit, SYM_L_GLOBAL)
 	mov %_ASM_BX, %_ASM_AX
 
 	/* Pop our saved arguments from the stack */
-	pop %_ASM_BX
-	pop %_ASM_BX
+	pop %_ASM_BX	/* @flags */
+	pop %_ASM_DI	/* @vmx */
+
+#ifdef CONFIG_KVM_APX
+	ALTERNATIVE "jmp .Lclear_egprs_done", "", X86_FEATURE_APX
+	test	$KVM_ENTER_EGPR_SWITCH, %_ASM_BX
+	jz	.Lclear_egprs_done
+	/*
+	 * Unlike legacy GPRs, saving could be conditional here on VM-Fail,
+	 * which however isn't in fastpath. Instead, simply saving EGPRs always.
+	 */
+	VMX_STORE_EGPRS %_ASM_DI
+	CLEAR_EGPRS
+.Lclear_egprs_done:
+#endif
 
 	/* ... and then the callee-save registers */
 	pop %_ASM_BX
