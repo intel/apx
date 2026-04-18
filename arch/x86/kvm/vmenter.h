@@ -2,6 +2,8 @@
 #ifndef __KVM_X86_VMENTER_H
 #define __KVM_X86_VMENTER_H
 
+#include "kvm-asm-offsets.h"
+
 #define KVM_ENTER_VMRESUME			BIT(0)
 #define KVM_ENTER_SAVE_SPEC_CTRL		BIT(1)
 #define KVM_ENTER_CLEAR_CPU_BUFFERS_FOR_MMIO	BIT(2)
@@ -75,6 +77,26 @@
 #endif
 	wrmsr
 .endm
+
+#define WORD_SIZE (BITS_PER_LONG / 8)
+
+#ifdef CONFIG_X86_64
+.macro CLEAR_REGS regs:vararg
+ .irp i, \regs
+	xor %r\i, %r\i
+ .endr
+.endm
+.macro VMX_LOAD_REGS src:req, regs:vararg
+ .irp i, \regs
+	mov (VMX_vcpu_arch_regs + \i * WORD_SIZE)(\src), %r\i
+ .endr
+.endm
+.macro VMX_STORE_REGS dst:req, regs:vararg
+ .irp i, \regs
+	mov %r\i, (VMX_vcpu_arch_regs + \i * WORD_SIZE)(\dst)
+ .endr
+.endm
+#endif
 
 #endif /* __ASSEMBLER__ */
 #endif /* __KVM_X86_ENTER_FLAGS_H */
