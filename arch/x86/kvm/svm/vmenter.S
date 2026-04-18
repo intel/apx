@@ -9,8 +9,6 @@
 #include "kvm-asm-offsets.h"
 #include "vmenter.h"
 
-#define WORD_SIZE (BITS_PER_LONG / 8)
-
 /* Intentionally omit RAX as it's context switched by hardware */
 #define VCPU_RCX	(SVM_vcpu_arch_regs + __VCPU_REGS_RCX * WORD_SIZE)
 #define VCPU_RDX	(SVM_vcpu_arch_regs + __VCPU_REGS_RDX * WORD_SIZE)
