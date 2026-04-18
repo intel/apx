@@ -79,6 +79,7 @@
 .endm
 
 #define WORD_SIZE (BITS_PER_LONG / 8)
+#define SEV_ES_GPRS_BASE 0x300
 
 #ifdef CONFIG_X86_64
 .macro CLEAR_REGS regs:vararg
@@ -104,6 +105,11 @@
 .macro SVM_STORE_REGS dst:req, regs:vararg
  .irp i, \regs
 	mov %r\i, (SVM_vcpu_arch_regs + \i * WORD_SIZE)(\dst)
+ .endr
+.endm
+.macro SEV_STORE_REGS dst:req, regs:vararg
+ .irp i, \regs
+	mov %r\i, (SEV_ES_GPRS_BASE + \i * WORD_SIZE)(\dst)
  .endr
 .endm
 #endif

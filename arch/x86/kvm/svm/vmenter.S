@@ -226,15 +226,10 @@ SYM_FUNC_END(__svm_vcpu_run)
 
 
 #ifdef CONFIG_X86_64
-#define SEV_ES_GPRS_BASE 0x300
 #define SEV_ES_RBX	(SEV_ES_GPRS_BASE + __VCPU_REGS_RBX * WORD_SIZE)
 #define SEV_ES_RBP	(SEV_ES_GPRS_BASE + __VCPU_REGS_RBP * WORD_SIZE)
 #define SEV_ES_RSI	(SEV_ES_GPRS_BASE + __VCPU_REGS_RSI * WORD_SIZE)
 #define SEV_ES_RDI	(SEV_ES_GPRS_BASE + __VCPU_REGS_RDI * WORD_SIZE)
-#define SEV_ES_R12	(SEV_ES_GPRS_BASE + __VCPU_REGS_R12 * WORD_SIZE)
-#define SEV_ES_R13	(SEV_ES_GPRS_BASE + __VCPU_REGS_R13 * WORD_SIZE)
-#define SEV_ES_R14	(SEV_ES_GPRS_BASE + __VCPU_REGS_R14 * WORD_SIZE)
-#define SEV_ES_R15	(SEV_ES_GPRS_BASE + __VCPU_REGS_R15 * WORD_SIZE)
 #endif
 
 /**
@@ -251,10 +246,7 @@ SYM_FUNC_START(__svm_sev_es_vcpu_run)
 	 * saved on VMRUN.
 	 */
 	mov %rbp, SEV_ES_RBP (%rdx)
-	mov %r15, SEV_ES_R15 (%rdx)
-	mov %r14, SEV_ES_R14 (%rdx)
-	mov %r13, SEV_ES_R13 (%rdx)
-	mov %r12, SEV_ES_R12 (%rdx)
+	SEV_STORE_REGS %rdx, 15,14,13,12
 	mov %rbx, SEV_ES_RBX (%rdx)
 
 	/*
