@@ -96,6 +96,16 @@
 	mov %r\i, (VMX_vcpu_arch_regs + \i * WORD_SIZE)(\dst)
  .endr
 .endm
+.macro SVM_LOAD_REGS src:req, regs:vararg
+ .irp i, \regs
+	mov (SVM_vcpu_arch_regs + \i * WORD_SIZE)(\src), %r\i
+ .endr
+.endm
+.macro SVM_STORE_REGS dst:req, regs:vararg
+ .irp i, \regs
+	mov %r\i, (SVM_vcpu_arch_regs + \i * WORD_SIZE)(\dst)
+ .endr
+.endm
 #endif
 
 #endif /* __ASSEMBLER__ */
