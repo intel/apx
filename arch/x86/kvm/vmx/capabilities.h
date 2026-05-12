@@ -414,4 +414,13 @@ static inline bool cpu_has_ept_mbec(void)
 		SECONDARY_EXEC_MODE_BASED_EPT_EXEC;
 }
 
+/*
+ * The APX enumeration guarantees the presence of the extended fields.
+ * The host CPUID bit alone is sufficient to rely on it.
+ */
+static inline bool vmx_instr_info_extended(void)
+{
+	return cpu_feature_enabled(X86_FEATURE_APX);
+}
+
 #endif /* __KVM_X86_VMX_CAPS_H */
