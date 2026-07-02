@@ -160,8 +160,12 @@ else
 	KBUILD_CFLAGS += -mskip-rax-setup
 
 ifdef CONFIG_X86_NATIVE_CPU
-        KBUILD_CFLAGS += -march=native
-        KBUILD_RUSTFLAGS += -Ctarget-cpu=native
+        # For testing this is a temporary measure to factor out
+        # compilers' APX generation
+        KBUILD_CFLAGS += -march=native -mno-apxf
+        # During the test, the feature option is switched between
+        # +/-apxf and none
+        KBUILD_RUSTFLAGS += -Ctarget-cpu=native -Ctarget-feature=-apxf
 else
         KBUILD_CFLAGS += -march=x86-64 -mtune=generic
         KBUILD_RUSTFLAGS += -Ctarget-cpu=x86-64 -Ztune-cpu=generic
