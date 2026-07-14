@@ -139,19 +139,70 @@ The reported number is the count of instructions referencing EGPRs
 
 # Possible Solution
 
-Beginning with Rust 1.95, native builds appear to avoid generating APX 
-instructions automatically. One possible approach would therefore be to 
-require Rust 1.95 as the minimum version for native kernel builds.
+ 1. Beginning with Rust 1.95, native builds appear to avoid generating 
+    APX instructions automatically. One possible approach would therefore 
+    be to require Rust 1.95 as the minimum version for native kernel 
+    builds.
 
-Another option is explicitly disable APX by passing the negative APX 
-target feature (`-apxf`). However, current Rust releases still warn about 
-this option because the feature is not stablized yet. 
+ 2. Another option is explicitly disable APX by passing the negative APX 
+    target feature (`-apxf`). However, current Rust releases still warn 
+    about this option because the feature is not stablized yet. 
 
-Miguel Ojeda suggested [a workaround][8] to suppress the warning. If that 
-proves reliable, a more attractive option would be to lower the minimum 
-version to 1.88 while always passing the negative APX target feature, 
-thereby preventing APX code generation regardless of future changes in 
-compiler defaults.
+    Miguel Ojeda suggested [a workaround][8] to suppress the warning. If 
+    that proves reliable, a more attractive option would be to lower the 
+    minimum version to 1.88 while always passing the negative APX target 
+    feature, thereby preventing APX code generation regardless of future 
+    changes in compiler defaults.
+
+## Depressing `apxf` Warning
+
+Using [a custom target JSON file][9] provides a workaround for the 
+warning against the currently unstable target feature.
+
+```
+$ rustc ... --target ./scripts/target.json ...
+$ cat ./scripts/target.json
+
+{
+    "arch": "x86_64",
+    "rustc-abi": "x86-softfloat",
+    "data-layout": "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128",
+    "features": "-mmx,+soft-float,+retpoline-external-thunk,+retpoline-indirect-branches,+retpoline-indirect-calls",
+    "llvm-target": "x86_64-linux-gnu",
+    "supported-sanitizers": ["kcfi","kernel-address"],
+    "target-pointer-width": 64,
+    "emit-debug-gdb-scripts": false,
+    "frame-pointer": "may-omit",
+    "stack-probes": {"kind": "none"}
+}
+```
+
+This approach suppresses the warning that would otherwise be emitted when 
+specifying the target feature directly:
+
+```
+warning: unstable feature specified for `-Ctarget-feature`: `apxf`
+  |
+  = note: this feature is not stably supported; its behavior can change in the future
+
+warning: 1 warning emitted
+```
+
+Older Rust releases prior to 1.93 however also emit an additional 
+warning:
+
+```
+'-apxf' is not a recognized feature for this target (ignoring feature)
+```
+
+Note that Rust 1.93 still emits the "unstable feature" warning when 
+`-Ctarget-feature=-apxf` is passed directly on the command line. However, 
+using the generated JSON file avoids this warning while still disabling 
+APX.
+
+So, Rust 1.93 with the `--target JSON` mechanism appears to provide the 
+balance. It allows APX to be disabled without warning, so making Rust 
+1.93 the minimum version for native builds.
 
 [1]: https://gcc.gnu.org/pipermail/gcc-patches/2023-August/628905.html
 [2]: https://github.com/llvm/llvm-project/pull/74199
@@ -161,3 +212,4 @@ compiler defaults.
 [6]: https://github.com/rust-lang/rust/pull/145531
 [7]: https://releases.rs/
 [8]: https://lore.kernel.org/lkml/20260712202538.GA1697833@ax162/
+[9]: https://rust-lang.github.io/rfcs/0131-target-specification.html
